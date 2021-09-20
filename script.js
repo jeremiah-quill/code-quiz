@@ -1,7 +1,14 @@
+// Todos:
+// 1. Finish endGame method to give highscore option
+// 2. Add replay button somewhere
+// 3. Add more questions
+// 4. Change logic to choose random questions, and stop at 5
+
 // DOM variables
 const timer = document.querySelector('.timer')
 const startButton = document.querySelector('.start-button')
 const questionContainer = document.querySelector('.question-container')
+
 
 const questions = [
     {
@@ -17,16 +24,16 @@ const questions = [
             correct: false},]
     },
     {
-        question: 'Question 2',
+        question: 'How does a FOR loop start?',
         answers: [
-            {answer: 'answer 1',
-            correct: true},
-            {answer: 'answer 2',
+            {answer: 'for(i=0; i<=5)',
             correct: false},
-            {answer: 'answer 3',
+            {answer: 'for(i<=5; i++)',
             correct: false},
-            {answer: 'answer 4',
-            correct: false},]
+            {answer: 'for(i = 1 to 5)',
+            correct: false},
+            {answer: 'for(i=0; i<=5; i++)',
+            correct: true},]
     },
     {
         question: 'Question 3',
@@ -37,7 +44,7 @@ const questions = [
             correct: false},
             {answer: 'answer 3',
             correct: false},
-            {answer: 'answer 4',
+            {answer: 'correct',
             correct: true},]
     }, 
     {
@@ -49,7 +56,7 @@ const questions = [
             correct: false},
             {answer: 'answer 3',
             correct: false},
-            {answer: 'answer 4',
+            {answer: 'correct',
             correct: true},]
     }, 
     {
@@ -61,7 +68,7 @@ const questions = [
             correct: false},
             {answer: 'answer 3',
             correct: false},
-            {answer: 'answer 4',
+            {answer: 'correct',
             correct: true},]
     }, 
 ]
@@ -72,7 +79,7 @@ const buildQuestion = (questionObject) => {
     questionTitleEl.className = 'question-title'
     questionTitleEl.textContent = questionObject.question
 
-    // Create answers ul and add an li for each answer
+    // Create ul and add an li for each answer
     let answersEl = document.createElement('ul')
     answersEl.className = 'answers'
     questionObject.answers.forEach((answer) => {
@@ -87,7 +94,7 @@ const buildQuestion = (questionObject) => {
 
     // Create question element and append with title and answers
     let questionEl = document.createElement('div')
-    questionEl.classname = 'question'
+    questionEl.className = 'question'
     questionEl.appendChild(questionTitleEl)
     questionEl.appendChild(answersEl)
 
@@ -97,21 +104,20 @@ const buildQuestion = (questionObject) => {
 
 
 const quiz = {
-    player: '',
+    playerInitials: '',
     stats: {
         timeLeft: 30,
         score: 0
     },
     timerId: '',
     penalty: 5,
-    isGameRunning: false,
     currentQuestion: 0,
     questions: [...questions],
     isTimeLeft: function() {
-        return this.stats.timeLeft > 0
+        return this.stats.timeLeft > 1
     },
     isQuestionsLeft: function() {
-        return this.questions.length
+        return this.currentQuestion <= this.questions.length - 1
     },
     startTimer: function() {
         timer.textContent = this.stats.timeLeft
@@ -121,7 +127,8 @@ const quiz = {
                 this.stats.timeLeft --
                 timer.textContent = this.stats.timeLeft
             } else {
-                this.stopTimer(this.timerId)
+                this.stats.timeLeft --
+                timer.textContent = this.stats.timeLeft
                 this.endGame()
             }
         }
@@ -139,48 +146,56 @@ const quiz = {
             timer.textContent = this.stats.timeLeft
         }
     },
+    isAnswerCorrect: function(answer) {
+        if(answer.getAttribute('data-correct')) {
+            this.stats.score ++
+            // Display 'correct' message on screen
+            console.log('correct')
+        } else {
+            this.subtractTime(this.penalty)
+            // Display 'wrong -5 seconds' message on screen
+            console.log('wrong')
+        }
+    },
+    nextQuestion: function() {
+        // If there are more questions, build one, else stop timer and game
+        if(this.isQuestionsLeft()) {
+            buildQuestion(this.questions[this.currentQuestion])
+            this.currentQuestion ++
+        } else {
+            this.endGame()
+        }
+    },
     startGame: function () {
-        startButton.style.display = 'none';
-        this.isGameRunning = true;
         this.startTimer()
-        buildQuestion(this.questions[this.currentQuestion])
-        this.currentquestion ++
+        buildQuestion(this.questions[0])
+        this.currentQuestion ++
     },
     endGame: function() {
-        console.log(`Your score is ${this.stats.score} and you finished with ${this.stats.timeLeft} seconds left`)
+        this.stopTimer(this.timerId)
+        // If there is a question remaining on the screen (time ran out), remove it --> should I put this here?
+        if(questionContainer.childNodes.length) {
+            questionContainer.childNodes[0].remove()
+        }
+        // Do something here with score, time remaining, highscore, replay, etc.
+        questionContainer.textContent = `Score: ${this.stats.score} Time remaining: ${this.stats.timeLeft} seconds`
     }
 }
 
-
-
-
 // Event Listeners
 startButton.addEventListener('click', () => {
+    startButton.style.display = 'none';
     quiz.startGame()
 })
 
 questionContainer.addEventListener('click', (e) => {
-    // Evaluate answer.  If correct, add 1 to score, if incorrect subtract penalty time
     if(e.target.className === 'answer') {
-        if(e.target.getAttribute('data-correct')) {
-            quiz.stats.score ++
-            console.log('correct answer')
-        } else {
-            quiz.subtractTime(quiz.penalty)
-            console.log('wrong answer')
-        }
-
-        // Remove question from DOM and also from questions array
+        // Evaluate answer
+        quiz.isAnswerCorrect(e.target);
+        // Remove question from DOM
         e.target.parentNode.parentNode.remove()
-        quiz.questions.shift()
-        
-        // If there are more questions, build another question, else game over
-        if(quiz.isQuestionsLeft()) {
-            buildQuestion(quiz.questions[quiz.currentQuestion])
-        } else {
-            quiz.stopTimer(quiz.timerId)
-            quiz.endGame()
-        }
+        // Show the next question
+        quiz.nextQuestion()
     }
 })
 
