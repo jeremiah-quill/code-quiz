@@ -25,6 +25,19 @@ body {
 	margin: 7px;
 }
 
+button {
+	background-color: purple;
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	padding: 5px;
+	border-radius: 3px;
+	border: none;
+}
+button:hover {
+	opacity: .5;
+}
+
 .answer:hover {
 	opacity: .5;
 }
@@ -35,4 +48,17 @@ body {
 
 .question-title {
 	margin-bottom: 20px;
+	font-size: 1.5rem;
+}
+
+.game-over-container {
+	display: none;
+}
+
+.game-over-container div {
+	margin: 10px;
+}
+
+h1 {
+	font-size: 2rem;
 }

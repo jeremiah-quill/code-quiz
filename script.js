@@ -1,13 +1,16 @@
 // Todos:
-// 1. Finish endGame method to give highscore option
-// 2. Add replay button somewhere
-// 3. Add more questions
+// 1. Add highscore option
+// 2. Add replay button somewhere -- done -> is it in the right spot
+// 3. Add more questions -- done -> still want to add more to complete #4 below
 // 4. Change logic to choose random questions, and stop at 5
+// 5. Question within endGame
 
 // DOM variables
 const timer = document.querySelector('.timer')
 const startButton = document.querySelector('.start-button')
 const questionContainer = document.querySelector('.question-container')
+const gameOverContainer = document.querySelector('.game-over-container')
+const playAgainButton = document.querySelector('.play-again-button')
 
 
 const questions = [
@@ -20,7 +23,7 @@ const questions = [
             correct: false},
             {answer: 'forEach()',
             correct: true},
-            {answer: 'None of the above',
+            {answer: 'none of the above',
             correct: false},]
     },
     {
@@ -36,39 +39,39 @@ const questions = [
             correct: true},]
     },
     {
-        question: 'Question 3',
+        question: 'Commonly used data types DO NOT include:',
         answers: [
-            {answer: 'answer 1',
+            {answer: 'strings',
             correct: false},
-            {answer: 'answer 2',
+            {answer: 'booleans',
             correct: false},
-            {answer: 'answer 3',
-            correct: false},
-            {answer: 'correct',
-            correct: true},]
+            {answer: 'alerts',
+            correct: true},
+            {answer: 'numbers',
+            correct: false},]
     }, 
     {
-        question: 'Question 4',
+        question: 'The condition in an if/else statement is enclosed in _____',
         answers: [
-            {answer: 'answer 1',
+            {answer: 'parentheses',
+            correct: true},
+            {answer: 'quotes',
             correct: false},
-            {answer: 'answer 2',
+            {answer: 'curly braces',
             correct: false},
-            {answer: 'answer 3',
-            correct: false},
-            {answer: 'correct',
-            correct: true},]
+            {answer: 'square brackets',
+            correct: false},]
     }, 
     {
-        question: 'Question 5',
+        question: 'Arrays in javascript can be used to store:',
         answers: [
-            {answer: 'answer 1',
+            {answer: 'numbers and strings',
             correct: false},
-            {answer: 'answer 2',
+            {answer: 'other arrays',
             correct: false},
-            {answer: 'answer 3',
+            {answer: 'booleans',
             correct: false},
-            {answer: 'correct',
+            {answer: 'all of the above',
             correct: true},]
     }, 
 ]
@@ -87,7 +90,7 @@ const buildQuestion = (questionObject) => {
         let answerDiv = document.createElement('div')
         answerDiv.className = 'answer'
         if(answer.correct){
-            answerLi.setAttribute('data-correct', 'correct')
+            answerDiv.setAttribute('data-correct', 'correct')
         }
         answerDiv.textContent = answer.answer
         answerLi.appendChild(answerDiv)
@@ -105,6 +108,12 @@ const buildQuestion = (questionObject) => {
     questionContainer.appendChild(questionEl);
 }
 
+const gameOverMessage = () => {
+    gameOverContainer.style.display = 'block';
+    document.querySelector('.score-span').textContent = quiz.stats.score
+    document.querySelector('.time-span').textContent = quiz.stats.timeLeft
+}
+
 
 const quiz = {
     playerInitials: '',
@@ -117,7 +126,7 @@ const quiz = {
     currentQuestion: 0,
     questions: [...questions],
     isTimeLeft: function() {
-        return this.stats.timeLeft > 1
+        return this.stats.timeLeft >= 1
     },
     isQuestionsLeft: function() {
         return this.currentQuestion <= this.questions.length - 1
@@ -127,11 +136,11 @@ const quiz = {
         const setTimer = () =>  {
             // If there is time left, remove 1 second, else stop the timer and end the game
             if(this.isTimeLeft()) {
-                this.stats.timeLeft --
+                this.stats.timeLeft--
                 timer.textContent = this.stats.timeLeft
             } else {
-                this.stats.timeLeft --
-                timer.textContent = this.stats.timeLeft
+                // this.stats.timeLeft --
+                // timer.textContent = this.stats.timeLeft
                 this.endGame()
             }
         }
@@ -180,14 +189,25 @@ const quiz = {
         if(questionContainer.childNodes.length) {
             questionContainer.childNodes[0].remove()
         }
-        // Do something here with score, time remaining, highscore, replay, etc.
-        questionContainer.textContent = `Score: ${this.stats.score} Time remaining: ${this.stats.timeLeft} seconds`
+        gameOverMessage()
+    },
+    resetGame: function() {
+        this.stats.timeLeft = 30;
+        this.stats.score = 0
+        this.currentQuestion = 0;
     }
 }
+
 
 // Event Listeners
 startButton.addEventListener('click', () => {
     startButton.style.display = 'none';
+    quiz.startGame()
+})
+
+playAgainButton.addEventListener('click', () => {
+    gameOverContainer.style.display = 'none'
+    quiz.resetGame()
     quiz.startGame()
 })
 
