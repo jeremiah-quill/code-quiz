@@ -83,13 +83,16 @@ const buildQuestion = (questionObject) => {
     let answersEl = document.createElement('ul')
     answersEl.className = 'answers'
     questionObject.answers.forEach((answer) => {
-        let answerEl = document.createElement('li')
-        answerEl.className = 'answer'
+        let answerLi = document.createElement('li')
+        let answerDiv = document.createElement('div')
+        answerDiv.className = 'answer'
         if(answer.correct){
-            answerEl.setAttribute('data-correct', 'correct')
+            answerLi.setAttribute('data-correct', 'correct')
         }
-        answerEl.textContent = answer.answer
-        answersEl.appendChild(answerEl)
+        answerDiv.textContent = answer.answer
+        answerLi.appendChild(answerDiv)
+        // answerEl.textContent = answer.answer
+        answersEl.appendChild(answerLi)
     })
 
     // Create question element and append with title and answers
@@ -193,7 +196,7 @@ questionContainer.addEventListener('click', (e) => {
         // Evaluate answer
         quiz.isAnswerCorrect(e.target);
         // Remove question from DOM
-        e.target.parentNode.parentNode.remove()
+        e.target.parentNode.parentNode.parentNode.remove()
         // Show the next question
         quiz.nextQuestion()
     }

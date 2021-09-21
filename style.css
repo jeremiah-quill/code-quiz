@@ -15,13 +15,14 @@ body {
 
 .answer {
 	background-color: purple;
-	margin: 10px;
+	display: inline-block;
 	color: white;
 	font-weight: bold;
 	width: auto;
 	cursor: pointer;
 	padding: 5px;
 	border-radius: 3px;
+	margin: 7px;
 }
 
 .answer:hover {
@@ -32,8 +33,6 @@ body {
 	width: 50%;
 }
 
-.question {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
+.question-title {
+	margin-bottom: 20px;
 }
