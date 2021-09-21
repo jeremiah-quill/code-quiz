@@ -9,8 +9,10 @@ body {
 .top-bar {
 	display: flex;
 	justify-content: space-between;
-	width: 100%;
-	margin-bottom: 50px;
+	width: 90%;
+	margin-bottom: 100px;
+	margin-top: 50px;
+	/* padding: 50px; */
 }
 
 .answer {
