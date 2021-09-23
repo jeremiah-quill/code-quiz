@@ -10,9 +10,17 @@ const startButton = document.querySelector('.start-button');
 const mainContainer = document.querySelector('.main-container');
 const viewHighscores = document.querySelector('.view-highscores')
 
-const playButton = (buttonText) => {
-    return document.createElement('button').innerHTML = `<button class="play-button">${buttonText}</button>`
-}
+// const playButton = (buttonText) => {
+//     return document.createElement('button').innerHTML = `<button class="play-button">${buttonText}</button>`
+// }
+
+const titleScreen = `<div class="title-screen">
+<h1>Coding Quiz Challenge</h1>
+<p>Try to answer the following code-related questions within the time limit.  Keep in mind that incorrect answers will penalize your time!</p>
+<button class="play-button">Start Game</button>
+</div>`;
+
+mainContainer.innerHTML = titleScreen;
 
 const removeAllChildren = (el) => {
     while (el.firstChild) {
@@ -60,12 +68,12 @@ const gameOverMessage = () => {
         <h1>Game Over</h1>
         <div class="score">Your Score: <span class="score-span">${quiz.stats.score}</span></div>
         <div class="time-left">Time Remaining: <span class="time-span">${quiz.stats.timeLeft}</span></div>
-        ${playButton('Play Again')}
         <form>
             <label>Add Initials:</label>
             <input type="text" id="initials-input"></input>
             <button id="submit-highscore">Submit</button>
         </form>
+        <button class="play-button">Play Again</button>
     `;
     gameOverContainer.innerHTML = gameOverContainerHTML;
     mainContainer.appendChild(gameOverContainer);
@@ -76,7 +84,7 @@ const showHighscores = () => {
     removeAllChildren(mainContainer)
     let highscoresContainer = document.createElement('div');
     highscoresContainer.className = 'highscores-container'
-    let highscoresContainerHTML = `${getHighscoresTable()} ${playButton('Play')}`
+    let highscoresContainerHTML = `${getHighscoresTable()} <button class="back-button">Back</button>`
     highscoresContainer.innerHTML = highscoresContainerHTML
     mainContainer.appendChild(highscoresContainer)
 }
@@ -130,6 +138,7 @@ const quiz = {
         clearInterval(id);
     },
     startGame: function () {
+        this.resetGame()
         viewHighscores.style.opacity = 0;
         this.startTimer();
         buildQuestion(this.questions[0]);
@@ -149,18 +158,31 @@ const quiz = {
 
 
 // Event Listeners
-startButton.addEventListener('click', () => {
-    removeAllChildren(mainContainer)
-    quiz.startGame();
-});
 
+// Start button
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'play-button') {
-        e.target.parentNode.remove();
-        quiz.resetGame();
+        removeAllChildren(mainContainer);
         quiz.startGame();
     }
 })
+
+// Back button
+mainContainer.addEventListener('click', (e) => {
+    if(e.target.className === 'back-button') {
+        removeAllChildren(mainContainer)
+        mainContainer.innerHTML = titleScreen;
+    }
+})
+
+// Play button
+// mainContainer.addEventListener('click', (e) => {
+//     if(e.target.className === 'play-button') {
+//         e.target.parentNode.remove();
+//         quiz.resetGame();
+//         quiz.startGame();
+//     }
+// })
 
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'answer') {
@@ -185,9 +207,9 @@ mainContainer.addEventListener('click', (e) => {
         }
 
         // Remove question from DOM
-        e.target.parentNode.parentNode.parentNode.remove();
+        removeAllChildren(mainContainer)
 
-        // If there are more questions, build one, else stop timer and game
+        // If there are more questions, build one, else end game
         if(quiz.currentQuestion <= quiz.questions.length - 1) {
             buildQuestion(quiz.questions[quiz.currentQuestion]);
             quiz.currentQuestion ++;

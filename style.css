@@ -15,6 +15,19 @@ body {
 	/* padding: 50px; */
 }
 
+.timer-container {
+	display: flex;
+	align-items: center;
+}
+
+.title-screen {
+	text-align: center;
+}
+
+.title-screen * {
+	margin: 15px;
+}
+
 .answer {
 	background-color: purple;
 	display: inline-block;
@@ -44,8 +57,14 @@ button:hover {
 	opacity: .5;
 }
 
-.question-container {
-	width: 50%;
+.main-container {
+	width: 80%;
+}
+
+.question {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .question-title {
@@ -53,9 +72,17 @@ button:hover {
 	font-size: 1.5rem;
 }
 
-/* .game-over-container {
-	display: none;
-} */
+.game-over-container {
+	text-align: center;
+}
+
+.game-over-container form {
+	margin: 30px 0 30px;
+}
+
+.game-over-container input {
+	width: 30px;
+}
 
 .game-over-container div {
 	margin: 10px;
