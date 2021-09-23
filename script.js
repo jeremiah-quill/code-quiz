@@ -9,7 +9,16 @@ const timer = document.querySelector('.timer');
 const startButton = document.querySelector('.start-button');
 const mainContainer = document.querySelector('.main-container');
 const viewHighscores = document.querySelector('.view-highscores')
-const playAgainButton = document.createElement('button').innerHTML = `<button class="play-again-button">Play</button>`
+
+const playButton = (buttonText) => {
+    return document.createElement('button').innerHTML = `<button class="play-button">${buttonText}</button>`
+}
+
+const removeAllChildren = (el) => {
+    while (el.firstChild) {
+    el.removeChild(el.firstChild);
+    }
+}
 
 const buildQuestion = (questionObject) => {
     // Create question title
@@ -42,8 +51,8 @@ const buildQuestion = (questionObject) => {
     mainContainer.appendChild(questionEl);
 }
 
-
 const gameOverMessage = () => {
+    removeAllChildren(mainContainer)
     let gameOverContainer = document.createElement('div');
     // TODO: add styles for class 'game-over-container'
     gameOverContainer.className = 'game-over-container';
@@ -51,7 +60,7 @@ const gameOverMessage = () => {
         <h1>Game Over</h1>
         <div class="score">Your Score: <span class="score-span">${quiz.stats.score}</span></div>
         <div class="time-left">Time Remaining: <span class="time-span">${quiz.stats.timeLeft}</span></div>
-        ${playAgainButton}
+        ${playButton('Play Again')}
         <form>
             <label>Add Initials:</label>
             <input type="text" id="initials-input"></input>
@@ -64,22 +73,17 @@ const gameOverMessage = () => {
 }
 
 const showHighscores = () => {
-    // remove all children from mainContainer
-    while (mainContainer.firstChild) {
-        mainContainer.removeChild(mainContainer.firstChild);
-    }
-    // Add Highscores container, table, and play again button to screen
+    removeAllChildren(mainContainer)
     let highscoresContainer = document.createElement('div');
     highscoresContainer.className = 'highscores-container'
-    let highscoresContainerHTML = `${getHighscoresTable()} ${playAgainButton}`
+    let highscoresContainerHTML = `${getHighscoresTable()} ${playButton('Play')}`
     highscoresContainer.innerHTML = highscoresContainerHTML
     mainContainer.appendChild(highscoresContainer)
 }
 
 const getHighscoresTable = () => {
     // Get highscores array from local storage
-
-
+    // Sort array into top 10 scores
     // Return HTML table based on top 10 scores 
     return `<div>this will be the highscores table</div>`
 }
@@ -96,29 +100,22 @@ const logHighscore = (name, score, timeLeft) => {
 }
 
 
-
-let time = 60;
+let startTime = 60;
 
 const quiz = {
     stats: {
-        timeLeft: time,
+        timeLeft: startTime,
         score: 0
     },
     timerId: '',
     penalty: 5,
     currentQuestion: 0,
     questions: [...questions],
-    isTimeLeft: function() {
-        return this.stats.timeLeft >= 1;
-    },
-    isQuestionsLeft: function() {
-        return this.currentQuestion <= this.questions.length - 1;
-    },
     startTimer: function() {
         timer.textContent = this.stats.timeLeft;
         const setTimer = () =>  {
             // If there is time left, remove 1 second, else stop the timer and end the game
-            if(this.isTimeLeft()) {
+            if(this.stats.timeLeft > 1) {
                 this.stats.timeLeft--;
                 timer.textContent = this.stats.timeLeft;
             } else {
@@ -132,35 +129,6 @@ const quiz = {
     stopTimer: function(id) {
         clearInterval(id);
     },
-    subtractTime: function(seconds) {
-        if(this.stats.timeLeft - seconds < 0) {
-            this.stats.timeLeft = 0;
-            timer.textContent = this.stats.timeLeft;
-        } else {
-            this.stats.timeLeft -= seconds;
-            timer.textContent = this.stats.timeLeft;
-        };
-    },
-    isAnswerCorrect: function(answer) {
-        if(answer.getAttribute('data-correct')) {
-            this.stats.score ++;
-            // Display 'correct' message on screen
-            console.log('correct');
-        } else {
-            this.subtractTime(this.penalty);
-            // Display 'wrong -5 seconds' message on screen
-            console.log('wrong');
-        }
-    },
-    nextQuestion: function() {
-        // If there are more questions, build one, else stop timer and game
-        if(this.isQuestionsLeft()) {
-            buildQuestion(this.questions[this.currentQuestion]);
-            this.currentQuestion ++;
-        } else {
-            this.endGame();
-        }
-    },
     startGame: function () {
         viewHighscores.style.opacity = 0;
         this.startTimer();
@@ -169,15 +137,11 @@ const quiz = {
     },
     endGame: function() {
         this.stopTimer(this.timerId);
-        // If there is a question remaining on the screen (time ran out), remove it --> should I put this here?
-        if(mainContainer.childNodes.length) {
-            mainContainer.childNodes[0].remove();
-        };
         gameOverMessage();
         viewHighscores.style.opacity = 1;
     },
     resetGame: function() {
-        this.stats.timeLeft = time;
+        this.stats.timeLeft = startTime;
         this.stats.score = 0;
         this.currentQuestion = 0;
     }
@@ -185,36 +149,54 @@ const quiz = {
 
 
 // Event Listeners
-
-// start game
 startButton.addEventListener('click', () => {
-    startButton.style.display = 'none';
+    removeAllChildren(mainContainer)
     quiz.startGame();
 });
 
-// play again
 mainContainer.addEventListener('click', (e) => {
-    if(e.target.className === 'play-again-button') {
-        // gameOverContainer.style.display = 'none';
+    if(e.target.className === 'play-button') {
         e.target.parentNode.remove();
         quiz.resetGame();
         quiz.startGame();
     }
 })
 
-// answer question
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'answer') {
+        let answer = e.target
+
         // Evaluate answer
-        quiz.isAnswerCorrect(e.target);
+        if(answer.getAttribute('data-correct')) {
+            quiz.stats.score ++;
+            // Display 'correct' message on screen
+            console.log('correct');
+        } else {
+            // Subtract penalty from timeLeft
+            if(quiz.stats.timeLeft - quiz.penalty > 0) {
+                quiz.stats.timeLeft -= quiz.penalty;
+                timer.textContent = quiz.stats.timeLeft;
+            } else {
+                quiz.stats.timeLeft = 0;
+                timer.textContent = quiz.stats.timeLeft;
+            }
+            // Display 'wrong -5 seconds' message on screen
+            console.log('wrong');
+        }
+
         // Remove question from DOM
         e.target.parentNode.parentNode.parentNode.remove();
-        // Show the next question
-        quiz.nextQuestion();
+
+        // If there are more questions, build one, else stop timer and game
+        if(quiz.currentQuestion <= quiz.questions.length - 1) {
+            buildQuestion(quiz.questions[quiz.currentQuestion]);
+            quiz.currentQuestion ++;
+        } else {
+            quiz.endGame();
+        }
     };
 });
 
-// submit highscore
 mainContainer.addEventListener('click', (e) => {
     if(e.target.id === 'submit-highscore') {
         e.preventDefault();
@@ -224,12 +206,9 @@ mainContainer.addEventListener('click', (e) => {
             console.log('please enter initials to submit your score')
         } else {
             logHighscore(initials, quiz.stats.score, quiz.stats.timeLeft)
+            showHighscores()
         }
-        showHighscores()
     }
 })
 
-
-
 viewHighscores.addEventListener('click', showHighscores)
-
