@@ -1,18 +1,9 @@
-// TODOS:
-// 1. Add highscore option --> add error message to DOM when no initials input, add highscore table when view highscores button clicked
-// 2. Add more questions -- done -> still want to add more to complete #4 below
-// 3. Change logic to choose random questions, and stop at 5
-// 4. Add styles for game-over-container class
-
 // DOM variables
 const timer = document.querySelector('.timer');
 const startButton = document.querySelector('.start-button');
 const mainContainer = document.querySelector('.main-container');
 const viewHighscores = document.querySelector('.view-highscores')
-
-// const playButton = (buttonText) => {
-//     return document.createElement('button').innerHTML = `<button class="play-button">${buttonText}</button>`
-// }
+const messageContainer = document.querySelector('.message-container')
 
 const titleScreen = `<div class="title-screen">
 <h1>Coding Quiz Challenge</h1>
@@ -20,15 +11,15 @@ const titleScreen = `<div class="title-screen">
 <button class="play-button">Start Game</button>
 </div>`;
 
-mainContainer.innerHTML = titleScreen;
 
-const removeAllChildren = (el) => {
+// Functions
+const emptyContainer = (el) => {
     while (el.firstChild) {
     el.removeChild(el.firstChild);
     }
 }
 
-const buildQuestion = (questionObject) => {
+const renderQuestion = (questionObject) => {
     // Create question title
     let questionTitleEl = document.createElement('div');
     questionTitleEl.className = 'question-title';
@@ -59,53 +50,97 @@ const buildQuestion = (questionObject) => {
     mainContainer.appendChild(questionEl);
 }
 
-const gameOverMessage = () => {
-    removeAllChildren(mainContainer)
+const renderGameOver = () => {
+    emptyContainer(mainContainer)
     let gameOverContainer = document.createElement('div');
-    // TODO: add styles for class 'game-over-container'
     gameOverContainer.className = 'game-over-container';
-    let gameOverContainerHTML = `
-        <h1>Game Over</h1>
-        <div class="score">Your Score: <span class="score-span">${quiz.stats.score}</span></div>
-        <div class="time-left">Time Remaining: <span class="time-span">${quiz.stats.timeLeft}</span></div>
-        <form>
-            <label>Add Initials:</label>
-            <input type="text" id="initials-input"></input>
-            <button id="submit-highscore">Submit</button>
-        </form>
-        <button class="play-button">Play Again</button>
-    `;
-    gameOverContainer.innerHTML = gameOverContainerHTML;
+    gameOverContainer.innerHTML = `
+    <h1>Game Over</h1>
+    <div class="score">Your Score: <span class="score-span">${quiz.stats.score}</span></div>
+    <div class="time-left">Time Remaining: <span class="time-span">${quiz.stats.timeLeft}</span></div>
+    <form>
+        <label>Add Initials:</label>
+        <input type="text" id="initials-input" maxlength="3"></input>
+        <button id="submit-highscore">Submit</button>
+    </form>
+    <button class="back-button">Play Again</button>`
     mainContainer.appendChild(gameOverContainer);
     timer.textContent = '-';
 }
 
-const showHighscores = () => {
-    removeAllChildren(mainContainer)
+const renderHighscores = () => {
+    emptyContainer(mainContainer)
+    // Create highscores container
     let highscoresContainer = document.createElement('div');
     highscoresContainer.className = 'highscores-container'
-    let highscoresContainerHTML = `${getHighscoresTable()} <button class="back-button">Back</button>`
-    highscoresContainer.innerHTML = highscoresContainerHTML
+
+    // Get highscores table, and create back button
+    let highscores = getHighscoresTable();
+    let backButton = document.createElement('button');
+    backButton.className = 'back-button';
+    backButton.textContent = 'Back'
+
+    // Add highscores table and button to highscores container, and add to main container
+    highscoresContainer.appendChild(highscores);
+    highscoresContainer.appendChild(backButton)
     mainContainer.appendChild(highscoresContainer)
 }
 
 const getHighscoresTable = () => {
-    // Get highscores array from local storage
-    // Sort array into top 10 scores
-    // Return HTML table based on top 10 scores 
-    return `<div>this will be the highscores table</div>`
+    if(localStorage.getItem('highscores') !== null) {
+        currentHighscores = JSON.parse(localStorage.getItem('highscores'))
+        // Create a table with header row
+        let table = document.createElement('table');
+        table.innerHTML = `
+        <tr>
+        <th>Player</th>
+        <th>Score</th>
+        <th>Time Remaining</th>
+        </tr>`
+
+        // Sort highscores by score and then by time left.  Only take the top 5
+        let sortedScores = currentHighscores.sort((a, b) => (a.score < b.score) ? 1 : (a.score === b.score) ? ((a.timeLeft < b.timeLeft) ? 1 : -1) : -1 )
+        let topFive = sortedScores.slice(0, 5)
+
+        // Add a row for each player score and append it to the table
+        topFive.forEach((score) => {
+            let row = table.insertRow()
+            row.innerHTML = `
+            <td>${score.name}</td>
+            <td>${score.score}</td>
+            <td>${score.timeLeft}</td>
+            `;
+            table.appendChild(row)
+        })
+    return table
+
+    } else {
+        let div = document.createElement('div');
+        div.textContent = 'No Current Highscores'
+        return div
+    }
 }
 
 const logHighscore = (name, score, timeLeft) => {
-    let currentHighscores;
     if(localStorage.getItem('highscores') !== null) {
-        currentHighscores = JSON.parse(localStorage.getItem('highscores'))
+        currentHighscores = JSON.parse(localStorage.getItem('highscores'));
     } else {
-        currentHighscores = [] 
-    }
-    currentHighscores.push({name, score, timeLeft})
-    localStorage.setItem('highscores', JSON.stringify(currentHighscores))
+        currentHighscores = [];
+    };
+    currentHighscores.push({name, score, timeLeft});
+    localStorage.setItem('highscores', JSON.stringify(currentHighscores));
+};
+
+const displayMessage = (className, text) => {
+    let message = document.createElement('div');
+    message.className = className
+    message.textContent = text
+    messageContainer.appendChild(message)
+    setTimeout(() => {
+        messageContainer.removeChild(message);
+    }, 500)
 }
+
 
 
 let startTime = 60;
@@ -123,12 +158,10 @@ const quiz = {
         timer.textContent = this.stats.timeLeft;
         const setTimer = () =>  {
             // If there is time left, remove 1 second, else stop the timer and end the game
-            if(this.stats.timeLeft > 1) {
+            if(this.stats.timeLeft >= 1) {
                 this.stats.timeLeft--;
                 timer.textContent = this.stats.timeLeft;
             } else {
-                // this.stats.timeLeft --
-                // timer.textContent = this.stats.timeLeft
                 this.endGame();
             };
         };
@@ -139,15 +172,14 @@ const quiz = {
     },
     startGame: function () {
         this.resetGame()
-        viewHighscores.style.opacity = 0;
+        viewHighscores.style.visibility = 'hidden'
         this.startTimer();
-        buildQuestion(this.questions[0]);
+        renderQuestion(this.questions[0]);
         this.currentQuestion ++;
     },
     endGame: function() {
         this.stopTimer(this.timerId);
-        gameOverMessage();
-        viewHighscores.style.opacity = 1;
+        renderGameOver();
     },
     resetGame: function() {
         this.stats.timeLeft = startTime;
@@ -158,11 +190,14 @@ const quiz = {
 
 
 // Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+    mainContainer.innerHTML = titleScreen
+});
 
 // Start button
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'play-button') {
-        removeAllChildren(mainContainer);
+        emptyContainer(mainContainer);
         quiz.startGame();
     }
 })
@@ -170,20 +205,13 @@ mainContainer.addEventListener('click', (e) => {
 // Back button
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'back-button') {
-        removeAllChildren(mainContainer)
+        emptyContainer(mainContainer)
+        viewHighscores.style.visibility = 'visible';
         mainContainer.innerHTML = titleScreen;
     }
 })
 
-// Play button
-// mainContainer.addEventListener('click', (e) => {
-//     if(e.target.className === 'play-button') {
-//         e.target.parentNode.remove();
-//         quiz.resetGame();
-//         quiz.startGame();
-//     }
-// })
-
+// Answer question
 mainContainer.addEventListener('click', (e) => {
     if(e.target.className === 'answer') {
         let answer = e.target
@@ -191,9 +219,10 @@ mainContainer.addEventListener('click', (e) => {
         // Evaluate answer
         if(answer.getAttribute('data-correct')) {
             quiz.stats.score ++;
-            // Display 'correct' message on screen
-            console.log('correct');
+            displayMessage('correct', `Correct!`)
         } else {
+            displayMessage('wrong', `Wrong! -${quiz.penalty} Seconds`)
+
             // Subtract penalty from timeLeft
             if(quiz.stats.timeLeft - quiz.penalty > 0) {
                 quiz.stats.timeLeft -= quiz.penalty;
@@ -202,16 +231,14 @@ mainContainer.addEventListener('click', (e) => {
                 quiz.stats.timeLeft = 0;
                 timer.textContent = quiz.stats.timeLeft;
             }
-            // Display 'wrong -5 seconds' message on screen
-            console.log('wrong');
         }
 
         // Remove question from DOM
-        removeAllChildren(mainContainer)
+        emptyContainer(mainContainer)
 
         // If there are more questions, build one, else end game
         if(quiz.currentQuestion <= quiz.questions.length - 1) {
-            buildQuestion(quiz.questions[quiz.currentQuestion]);
+            renderQuestion(quiz.questions[quiz.currentQuestion]);
             quiz.currentQuestion ++;
         } else {
             quiz.endGame();
@@ -219,18 +246,28 @@ mainContainer.addEventListener('click', (e) => {
     };
 });
 
+
+
+
+// Submit highscore
 mainContainer.addEventListener('click', (e) => {
     if(e.target.id === 'submit-highscore') {
         e.preventDefault();
         let initials = document.querySelector('#initials-input').value
         if(initials == '') {
-            // Add this to the DOM
-            console.log('please enter initials to submit your score')
+            let input = document.querySelector('input');
+            input.style.border = '2px solid red'
+            setTimeout(() => {
+                input.style.border = '1px solid black'
+            }, 1000)
         } else {
             logHighscore(initials, quiz.stats.score, quiz.stats.timeLeft)
-            showHighscores()
+            renderHighscores()
         }
     }
 })
 
-viewHighscores.addEventListener('click', showHighscores)
+viewHighscores.addEventListener('click', () => {
+    viewHighscores.style.visibility = 'hidden';
+    renderHighscores()
+})
