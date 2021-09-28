@@ -10,7 +10,8 @@ Welcome to my quiz app! After clicking start, a timer begins to count down and t
 
 The following are screenshots of the finished product:
 
-<img width="1280" alt="Title Screen" src="https://user-images.githubusercontent.com/53875206/135099190-cfb0ccf4-7402-4f62-85b1-cc770bcb6ebd.png">
-<img width="1280" alt="Question View" src="https://user-images.githubusercontent.com/53875206/135099215-fb68bf19-93c2-425e-a019-fcb74865953d.png">
-<img width="1280" alt="Game Over Screen" src="https://user-images.githubusercontent.com/53875206/135099232-fb6c0360-5b16-417e-806f-76ae73f34d47.png">
-<img width="1280" alt="Highscores" src="https://user-images.githubusercontent.com/53875206/135099247-f59bc86c-6ac7-468e-89e1-f195351fd4a4.png">
+![image](https://user-images.githubusercontent.com/53875206/135099557-524a54c4-867d-40c8-96d1-e2c5fd291896.png)
+![image](https://user-images.githubusercontent.com/53875206/135099734-217d4dcc-d7db-4327-920c-72d9e5360c52.png)
+![image](https://user-images.githubusercontent.com/53875206/135099841-123cb086-8330-4b1a-bc78-45080622416c.png)
+![image](https://user-images.githubusercontent.com/53875206/135099949-5b28b25a-748b-403f-809d-3706493cc57c.png)
+
