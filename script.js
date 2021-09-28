@@ -70,17 +70,19 @@ const renderGameOver = () => {
 
 const renderHighscores = () => {
     emptyContainer(mainContainer)
-    // Create highscores container
     let highscoresContainer = document.createElement('div');
     highscoresContainer.className = 'highscores-container'
 
-    // Get highscores table, and create back button
+    // Get highscores table, create back button and title elements
     let highscores = getHighscoresTable();
     let backButton = document.createElement('button');
+    let highscoreTitle = document.createElement('h2');
+    highscoreTitle.textContent = 'Highscores'
     backButton.className = 'back-button';
     backButton.textContent = 'Back'
 
-    // Add highscores table and button to highscores container, and add to main container
+    // Add highscores table, back button and title to highscores container, and add to main container
+    highscoresContainer.appendChild(highscoreTitle)
     highscoresContainer.appendChild(highscores);
     highscoresContainer.appendChild(backButton)
     mainContainer.appendChild(highscoresContainer)
@@ -93,9 +95,9 @@ const getHighscoresTable = () => {
         let table = document.createElement('table');
         table.innerHTML = `
         <tr>
-        <th>Player</th>
-        <th>Score</th>
-        <th>Time Remaining</th>
+            <th>Player</th>
+            <th>Score</th>
+            <th>Time Remaining</th>
         </tr>`
 
         // Sort highscores by score and then by time left.  Only take the top 5
@@ -140,7 +142,6 @@ const displayMessage = (className, text) => {
         messageContainer.removeChild(message);
     }, 500)
 }
-
 
 
 let startTime = 60;
@@ -236,7 +237,7 @@ mainContainer.addEventListener('click', (e) => {
         // Remove question from DOM
         emptyContainer(mainContainer)
 
-        // If there are more questions, build one, else end game
+        // If there are more questions, render one, else end game
         if(quiz.currentQuestion <= quiz.questions.length - 1) {
             renderQuestion(quiz.questions[quiz.currentQuestion]);
             quiz.currentQuestion ++;
@@ -245,9 +246,6 @@ mainContainer.addEventListener('click', (e) => {
         }
     };
 });
-
-
-
 
 // Submit highscore
 mainContainer.addEventListener('click', (e) => {
